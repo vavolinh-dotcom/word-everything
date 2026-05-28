@@ -1,0 +1,20 @@
+{
+  "name": "local-workspace",
+  "interface": {
+    "displayName": "Local Workspace"
+  },
+  "plugins": [
+    {
+      "name": "word-live-mcp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/word-live-mcp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

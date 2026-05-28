@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "word-live": {
+      "command": "node",
+      "args": [
+        "./scripts/word-live-server.mjs"
+      ]
+    }
+  }
+}

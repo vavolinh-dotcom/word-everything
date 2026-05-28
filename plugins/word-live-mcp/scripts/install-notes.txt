@@ -1,0 +1,15 @@
+Word Live MCP install notes
+
+1. This plugin is meant to be discovered through the repository marketplace file:
+   .agents/plugins/marketplace.json
+2. The MCP server entrypoint is:
+   plugins/word-live-mcp/scripts/word-live-server.mjs
+3. The MCP server can fall back to the direct bridge:
+   plugins/word-live-mcp/scripts/word-bridge.ps1
+4. The desktop helper runs the Word COM worker:
+   plugins/word-live-mcp/scripts/word-com-worker.ps1
+5. Host requirements:
+   - Windows
+   - Microsoft Word desktop app
+   - Node available to Codex
+   - PowerShell available to Codex
