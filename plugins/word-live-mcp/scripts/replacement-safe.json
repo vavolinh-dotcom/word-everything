@@ -1,0 +1,3 @@
+{
+  "text": "局部放电是高压电缆、变压器及开关设备绝缘劣化的重要早期征兆。现场采集的局部放电脉冲通常持续时间短、频带宽，且幅值易受外界干扰影响。白噪声、周期性窄带干扰以及电磁噪声会直接降低脉冲到达时刻（time of arrival, ToA）的拾取精度，进而影响基于时域反射或多端到达时间差的故障定位结果。\n\nPartial discharge is an important early indicator of insulation deterioration in high-voltage cables, transformers, and switchgear. Partial-discharge pulses acquired in the field are typically characterized by short duration, broad bandwidth, and amplitudes that are highly susceptible to external interference. White noise, periodic narrowband interference, and electromagnetic noise can directly degrade the accuracy of time-of-arrival (ToA) picking, thereby compromising fault-localization results based on time-domain reflectometry or multi-terminal time-difference-of-arrival measurements."
+}

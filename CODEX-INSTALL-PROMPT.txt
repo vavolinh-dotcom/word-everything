@@ -1,0 +1,1 @@
+Clone this repository, open it in Codex, install `word-live-mcp` from `.agents/plugins/marketplace.json`, run `.\plugins\word-live-mcp\scripts\setup-word-live-mcp.ps1 -StartHelper`, then help me test one live edit in Microsoft Word.
