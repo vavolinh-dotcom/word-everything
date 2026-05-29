@@ -9,6 +9,8 @@ Use this plugin if you want Codex to:
 - read the current Word selection
 - rewrite the selected paragraph in place
 - translate selected content while keeping the original
+- insert translated or polished versions below the original with automatic headings
+- rewrite selected content with Track Changes enabled
 - replace a paragraph by index
 - add comments, toggle Track Changes, and save the document
 
@@ -85,6 +87,7 @@ Expected result:
    - `Read my current Word selection and polish it.`
    - `Translate this passage into professional academic English and keep the original text.`
    - `Rewrite this paragraph so it sounds more like a paper introduction.`
+   - `Rewrite the current selection with Track Changes enabled.`
 3. Codex reads the selection first.
 4. Codex writes the revision back into the active Word document.
 
@@ -129,6 +132,26 @@ node .\plugins\word-live-mcp\scripts\lifecycle-smoke-test.mjs
 Smoke test report path:
 
 - `plugins/word-live-mcp/runtime/lifecycle-smoke-report.json`
+
+## High-level Word workflows
+
+The plugin includes workflow tools built on top of lower-level Word operations:
+
+- `word_translate_selection_keep_original`
+- `word_polish_selection_keep_original`
+- `word_rewrite_selection_with_track_changes`
+
+Keep-original workflows support:
+
+- `target_language`: label for the generated language, such as `English`
+- `style`: label for the generated style, such as `academic` or `professional`
+- `heading`: custom heading before the inserted version
+- `include_heading`: set to `false` to insert only the generated text
+
+By default, translated and polished versions are inserted after the selected original with headings such as:
+
+- `Translation - English, academic:`
+- `Polished version - academic:`
 
 ## Status model
 

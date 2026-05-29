@@ -75,6 +75,15 @@ const toolDefinitions = [
     }
   },
   {
+    name: "word_delete_selection",
+    description: "Delete the currently selected text in Word.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false
+    }
+  },
+  {
     name: "word_insert_text_at_selection",
     description: "Insert text at the current selection or cursor position without requiring selected content.",
     inputSchema: {
@@ -83,6 +92,114 @@ const toolDefinitions = [
         text: {
           type: "string",
           description: "Text to insert."
+        }
+      },
+      required: ["text"],
+      additionalProperties: false
+    }
+  },
+  {
+    name: "word_insert_text_after_selection",
+    description: "Insert text immediately after the current selection while keeping the selected content.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description: "Text to insert after the current selection."
+        }
+      },
+      required: ["text"],
+      additionalProperties: false
+    }
+  },
+  {
+    name: "word_translate_selection_keep_original",
+    description: "Keep the current selection in place and insert a translated version after it.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description: "Translated text to insert after the current selection."
+        },
+        target_language: {
+          type: "string",
+          description: "Target language label for the inserted translation heading. Defaults to English."
+        },
+        style: {
+          type: "string",
+          description: "Optional translation style label, such as academic, professional, or plain."
+        },
+        heading: {
+          type: "string",
+          description: "Optional custom heading inserted before the translated text."
+        },
+        separator: {
+          type: "string",
+          description: "Optional separator inserted between the original selection and the translated text. Defaults to two newlines."
+        },
+        include_heading: {
+          type: "boolean",
+          description: "Whether to insert a heading before the translated text. Defaults to true."
+        }
+      },
+      required: ["text"],
+      additionalProperties: false
+    }
+  },
+  {
+    name: "word_polish_selection_keep_original",
+    description: "Keep the current selection in place and insert a polished version after it.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description: "Polished text to insert after the current selection."
+        },
+        style: {
+          type: "string",
+          description: "Polishing style label for the inserted heading. Defaults to academic."
+        },
+        target_language: {
+          type: "string",
+          description: "Optional language label for the polished text."
+        },
+        heading: {
+          type: "string",
+          description: "Optional custom heading inserted before the polished text."
+        },
+        separator: {
+          type: "string",
+          description: "Optional separator inserted between the original selection and the polished text. Defaults to two newlines."
+        },
+        include_heading: {
+          type: "boolean",
+          description: "Whether to insert a heading before the polished text. Defaults to true."
+        }
+      },
+      required: ["text"],
+      additionalProperties: false
+    }
+  },
+  {
+    name: "word_rewrite_selection_with_track_changes",
+    description: "Turn on Track Changes and rewrite the current selection with new text.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description: "Replacement text for the current selection."
+        },
+        style: {
+          type: "string",
+          description: "Rewrite style label, such as academic, concise, or reviewer-friendly."
+        },
+        target_language: {
+          type: "string",
+          description: "Optional language label for the rewritten text."
         }
       },
       required: ["text"],
@@ -375,6 +492,113 @@ async function invokeAction(action, args = {}) {
   };
 }
 
+function hasOwnValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
+function buildDerivedHeading(kind, args = {}) {
+  if (hasOwnValue(args.heading)) {
+    return String(args.heading).trim();
+  }
+
+  if (kind === "translation") {
+    const targetLanguage = hasOwnValue(args.target_language) ? String(args.target_language).trim() : "English";
+    const style = hasOwnValue(args.style) ? `, ${String(args.style).trim()}` : "";
+    return `Translation - ${targetLanguage}${style}:`;
+  }
+
+  if (kind === "polish") {
+    const style = hasOwnValue(args.style) ? String(args.style).trim() : "academic";
+    const targetLanguage = hasOwnValue(args.target_language) ? `, ${String(args.target_language).trim()}` : "";
+    return `Polished version - ${style}${targetLanguage}:`;
+  }
+
+  return "Derived version:";
+}
+
+function buildDerivedInsertText(kind, args = {}) {
+  const separator = args.separator === undefined ? "\r\n\r\n" : String(args.separator);
+  const includeHeading = args.include_heading !== false;
+  const heading = includeHeading ? buildDerivedHeading(kind, args) : "";
+  const text = String(args.text ?? "");
+
+  if (!includeHeading) {
+    return `${separator}${text}`;
+  }
+
+  return `${separator}${heading}\r\n${text}`;
+}
+
+async function insertDerivedTextAfterSelection(kind, args = {}) {
+  const selectionResult = await invokeAction("get_selection");
+  if (selectionResult.ok === false) {
+    return selectionResult;
+  }
+
+  const selectionText = selectionResult.selection?.text || "";
+  if (!selectionText) {
+    return {
+      ok: false,
+      error: "The current selection is empty. Select the target text in Word first."
+    };
+  }
+
+  const text = String(args.text ?? "");
+  if (!text) {
+    return {
+      ok: false,
+      error: "The derived text is empty. Provide translated, polished, or rewritten text before writing to Word."
+    };
+  }
+
+  const insertResult = await invokeAction("insert_text_after_selection", {
+    text: buildDerivedInsertText(kind, args)
+  });
+
+  return {
+    ...insertResult,
+    sourceSelection: selectionResult.selection,
+    workflow: {
+      kind,
+      targetLanguage: args.target_language || null,
+      style: args.style || null,
+      includeHeading: args.include_heading !== false,
+      heading: args.include_heading === false ? null : buildDerivedHeading(kind, args)
+    }
+  };
+}
+
+async function rewriteSelectionWithTrackChanges(args = {}) {
+  const text = String(args.text ?? "");
+  if (!text) {
+    return {
+      ok: false,
+      error: "The rewritten text is empty. Provide replacement text before writing to Word."
+    };
+  }
+
+  const trackResult = await invokeAction("set_track_revisions", {
+    enabled: true
+  });
+  if (trackResult.ok === false) {
+    return trackResult;
+  }
+
+  const replaceResult = await invokeAction("replace_selection", { text });
+  return {
+    ...replaceResult,
+    workflow: {
+      kind: "rewrite_with_track_changes",
+      targetLanguage: args.target_language || null,
+      style: args.style || null
+    },
+    trackRevisions: {
+      enabled: true,
+      result: trackResult
+    }
+  };
+}
+
 async function handleRequest(message) {
   switch (message.method) {
     case "initialize": {
@@ -404,12 +628,30 @@ async function handleRequest(message) {
     case "tools/call": {
       const name = message.params?.name;
       const args = message.params?.arguments || {};
+      if (name === "word_translate_selection_keep_original") {
+        const result = await insertDerivedTextAfterSelection("translation", args);
+        sendResponse(message.id, toToolResult(result));
+        return;
+      }
+      if (name === "word_polish_selection_keep_original") {
+        const result = await insertDerivedTextAfterSelection("polish", args);
+        sendResponse(message.id, toToolResult(result));
+        return;
+      }
+      if (name === "word_rewrite_selection_with_track_changes") {
+        const result = await rewriteSelectionWithTrackChanges(args);
+        sendResponse(message.id, toToolResult(result));
+        return;
+      }
+
       const actionMap = {
         word_status: "status",
         word_open_document: "open_document",
         word_get_selection: "get_selection",
         word_replace_selection: "replace_selection",
+        word_delete_selection: "delete_selection",
         word_insert_text_at_selection: "insert_text_at_selection",
+        word_insert_text_after_selection: "insert_text_after_selection",
         word_list_paragraphs: "list_paragraphs",
         word_replace_paragraph: "replace_paragraph",
         word_set_track_revisions: "set_track_revisions",

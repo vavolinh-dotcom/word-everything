@@ -1,6 +1,6 @@
 {
   "name": "word-live-mcp",
-  "version": "0.1.0+codex.20260528091120",
+  "version": "0.1.0+codex.20260529040810",
   "description": "Live-edit Microsoft Word on Windows through a local MCP server backed by Word COM automation for local repository distribution.",
   "author": {
     "name": "Codex Local Plugins"
