@@ -1,0 +1,4 @@
+﻿plugins/word-live-mcp/logs/*
+plugins/word-live-mcp/runtime/*
+!plugins/word-live-mcp/logs/.gitkeep
+!plugins/word-live-mcp/runtime/.gitkeep

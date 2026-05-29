@@ -1,0 +1,37 @@
+{
+  "name": "word-live-mcp",
+  "version": "0.1.0+codex.20260529040810",
+  "description": "Live-edit Microsoft Word on Windows through a local MCP server backed by Word COM automation for local repository distribution.",
+  "author": {
+    "name": "Codex Local Plugins"
+  },
+  "license": "MIT",
+  "keywords": [
+    "word",
+    "microsoft-word",
+    "mcp",
+    "windows",
+    "office",
+    "automation"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Word Live MCP",
+    "shortDescription": "Read and edit the active Microsoft Word document from Codex",
+    "longDescription": "Word Live MCP connects Codex to the local desktop version of Microsoft Word on Windows. It can inspect the active document, read the current selection, replace selected text, edit paragraphs, toggle Track Changes, add comments, and save the document.",
+    "developerName": "Codex Local Plugins",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Read my current Word selection and rewrite it more clearly.",
+      "Turn on Track Changes and revise the selected paragraph.",
+      "Replace paragraph 12 in the active Word document."
+    ],
+    "brandColor": "#1F6F43"
+  }
+}

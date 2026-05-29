@@ -2,6 +2,8 @@
 
 This repository contains the shareable `word-live-mcp` Codex plugin for live editing Microsoft Word on Windows.
 
+It supports selection-based editing, delete selection, keep-original translation and polishing workflows, and Track Changes rewrites.
+
 ## What to do after cloning
 
 1. Open this repository in Codex.

@@ -98,6 +98,7 @@ function Replace-SelectionSafely {
         [Parameter(Mandatory = $true)]
         $Selection,
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$Text
     )
 
@@ -107,6 +108,23 @@ function Replace-SelectionSafely {
     $documentRange = $range.Document.Range($start, $end)
     $documentRange.Text = $Text
     $Selection.SetRange($start, $start + $Text.Length)
+    return $documentRange
+}
+
+function Insert-TextAfterSelection {
+    param(
+        [Parameter(Mandatory = $true)]
+        $Selection,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Text
+    )
+
+    $range = $Selection.Range
+    $insertAt = [int]$range.End
+    $documentRange = $range.Document.Range($insertAt, $insertAt)
+    $documentRange.Text = $Text
+    $Selection.SetRange($range.Start, $range.End)
     return $documentRange
 }
 
@@ -220,6 +238,35 @@ try {
             }
             break
         }
+        "delete_selection" {
+            $app = Get-WordApplication
+            if ($null -eq $app) {
+                throw "Microsoft Word is not running."
+            }
+            $doc = Require-ActiveDocument -App $app
+            $selection = $app.Selection
+            if ($null -eq $selection) {
+                throw "There is no active selection."
+            }
+            $before = Normalize-WordText $selection.Range.Text
+            if ([string]::IsNullOrEmpty($before)) {
+                throw "The current selection is empty. Select the target text in Word first."
+            }
+
+            $updatedRange = Replace-SelectionSafely -Selection $selection -Text ""
+
+            Write-WorkerResult @{
+                ok = $true
+                document = @{
+                    name = [string]$doc.Name
+                    path = [string]$doc.FullName
+                }
+                before = $before
+                after = Normalize-WordText $updatedRange.Text
+                deleted = $true
+            }
+            break
+        }
         "insert_text_at_selection" {
             $text = [string]$args.text
             $app = Get-WordApplication
@@ -241,6 +288,32 @@ try {
                     path = [string]$doc.FullName
                 }
                 inserted = Normalize-WordText $updatedRange.Text
+            }
+            break
+        }
+        "insert_text_after_selection" {
+            $text = [string]$args.text
+            $app = Get-WordApplication
+            if ($null -eq $app) {
+                throw "Microsoft Word is not running."
+            }
+            $doc = Require-ActiveDocument -App $app
+            $selection = $app.Selection
+            if ($null -eq $selection) {
+                throw "There is no active selection."
+            }
+
+            $before = Normalize-WordText $selection.Range.Text
+            $insertedRange = Insert-TextAfterSelection -Selection $selection -Text $text
+
+            Write-WorkerResult @{
+                ok = $true
+                document = @{
+                    name = [string]$doc.Name
+                    path = [string]$doc.FullName
+                }
+                before = $before
+                inserted = Normalize-WordText $insertedRange.Text
             }
             break
         }

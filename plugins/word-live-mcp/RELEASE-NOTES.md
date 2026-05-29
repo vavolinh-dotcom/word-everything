@@ -1,5 +1,21 @@
 # Release Notes
 
+## 0.1.0+codex.20260529040810
+
+Workflow polish release.
+
+Included in this release:
+
+- target language and style labels for keep-original workflows
+- automatic headings for translated and polished insertions
+- workflow metadata in high-level tool responses
+- updated README and skill routing guidance
+
+Upgrade notes:
+
+- reinstall or refresh the plugin in Codex after pulling this build
+- start a new Codex thread so the refreshed MCP tools are picked up
+
 ## 0.1.0+codex.20260528091120
 
 Initial shareable beta release with a Codex cachebuster for reinstall-friendly local iteration.
